@@ -1,0 +1,163 @@
+__pycache__/
+*.pyc
+.env
+credentials.json
+```
+
+**Save and close.**
+
+---
+
+## **📤 PART 3: UPLOAD TO GITHUB**
+
+### **Step 6: Create New Repo**
+
+1. Go to: **https://github.com/new**
+2. Repository name: `sales-bot-api`
+3. **Public**
+4. **Don't** check any boxes
+5. Click **"Create repository"**
+
+---
+
+### **Step 7: Upload Files**
+
+1. On empty repo page, click **"uploading an existing file"**
+2. **Drag and drop** all 3 files:
+   - `app.py`
+   - `requirements.txt`
+   - `.gitignore`
+3. Commit message: `Initial commit`
+4. Click **"Commit changes"**
+
+---
+
+## **🚀 PART 4: DEPLOY TO RENDER**
+
+### **Step 8: Sign Up / Log In to Render**
+
+1. Go to: **https://render.com**
+2. Click **"Get Started for Free"**
+3. **Sign in with GitHub**
+4. Authorize Render
+
+---
+
+### **Step 9: Create Web Service**
+
+1. Dashboard → Click **"New +"**
+2. Click **"Web Service"**
+3. Find repo: **`sales-bot-api`**
+4. Click **"Connect"**
+
+---
+
+### **Step 10: Configure Service**
+
+Fill these **EXACTLY**:
+
+**Name:**
+```
+sales-bot-api
+```
+
+**Region:**
+```
+Singapore (or closest to you)
+```
+
+**Branch:**
+```
+main
+```
+
+**Runtime:**
+```
+Python 3
+```
+
+**Build Command:**
+```
+pip install -r requirements.txt
+```
+
+**Start Command:**
+```
+gunicorn app:app
+```
+
+**Instance Type:**
+```
+Free
+```
+
+---
+
+### **Step 11: Add Environment Variables**
+
+Click **"Add Environment Variable"** and add these **ONE BY ONE**:
+
+---
+
+**Variable 1:**
+```
+Key:   GROQ_API_KEY
+Value: [Your Groq API key - starts with gsk_]
+```
+
+---
+
+**Variable 2:**
+```
+Key:   SPREADSHEET_NAME
+Value: Sales-CRM-Database
+```
+
+---
+
+**Variable 3:**
+```
+Key:   GCP_CREDENTIALS
+Value: [Entire credentials.json content - see below]
+```
+
+**How to get credentials.json content:**
+
+1. Open `credentials.json` in Notepad
+2. **Select All** (Ctrl+A)
+3. **Copy** (Ctrl+C)
+4. **Paste** in Value field
+
+Should be ONE LINE starting with: `{"type":"service_account"...`
+
+---
+
+### **Step 12: Deploy**
+
+1. Click **"Create Web Service"**
+2. Wait 5-7 minutes
+3. Watch the logs
+
+**You'll see:**
+```
+==> Downloading dependencies
+==> Building
+==> Starting
+==> Your service is live 🎉
+```
+
+---
+
+### **Step 13: Get Your URL**
+
+At the top: `https://sales-bot-api.onrender.com`
+
+**Copy this URL!**
+
+---
+
+### **Step 14: Test Backend**
+
+Open browser, go to:
+```
+https://sales-bot-api.onrender.com/health

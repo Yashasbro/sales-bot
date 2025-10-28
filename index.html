@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sales Bot</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Arial;background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;padding:20px}
+.container{max-width:900px;margin:0 auto;background:#fff;border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,0.3)}
+.header{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:30px;text-align:center;border-radius:20px 20px 0 0}
+.content{padding:30px}
+select,textarea,button{width:100%;padding:12px;margin:10px 0;border:2px solid #e0e0e0;border-radius:10px;font-size:16px}
+textarea{min-height:150px}
+button{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;cursor:pointer;font-weight:bold}
+button:hover{opacity:0.9}
+.btn-sec{background:#f0f0f0;color:#333}
+.tabs{display:flex;gap:10px;margin-bottom:20px;border-bottom:2px solid #e0e0e0}
+.tab{padding:15px 25px;background:none;border:none;cursor:pointer;border-bottom:3px solid transparent;width:auto}
+.tab.active{color:#667eea;border-bottom-color:#667eea;font-weight:bold}
+.tab-content{display:none}
+.tab-content.active{display:block}
+.mic{width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);font-size:48px;margin:20px auto;display:block}
+.mic.rec{background:#e74c3c;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+.voice{text-align:center;padding:40px}
+.timer{font-size:24px;font-weight:bold;color:#667eea;margin:10px 0}
+.data{margin-top:30px;padding:25px;background:#f0f8ff;border-radius:10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:15px}
+.item{padding:10px;background:#fff;border-radius:8px}
+.item label{display:block;font-weight:bold;color:#666;font-size:12px}
+.msg{padding:20px;margin:20px 0;border-radius:10px;text-align:center}
+.success{background:#d4edda;color:#155724}
+.error{background:#f8d7da;color:#721c24}
+.loading{display:none;text-align:center;padding:20px}
+.loading.active{display:block}
+.spinner{border:4px solid #f3f3f3;border-top:4px solid #667eea;border-radius:50%;width:40px;height:40px;animation:spin 1s linear infinite;margin:20px auto}
+@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header">
+<h1>🎤 Sales Bot</h1>
+<p>AI Lead Logger</p>
+</div>
+<div class="content">
+<label>Sales Rep:</label>
+<select id="rep">
+<option>Rajesh Kumar</option>
+<option>Priya Sharma</option>
+<option>Amit Patel</option>
+<option>Sneha Reddy</option>
+</select>
+<div class="tabs">
+<button class="tab active" onclick="switchTab('text')">📝 Text</button>
+<button class="tab" onclick="switchTab('voice')">🎤 Voice</button>
+</div>
+<div id="text-tab" class="tab-content active">
+<textarea id="txt" placeholder="Met Dr. Sharma. Need 5 monitors. Budget 25 lakhs."></textarea>
+<button onclick="extract()">Extract</button>
+<button class="btn-sec" onclick="clear()">Clear</button>
+</div>
+<div id="voice-tab" class="tab-content">
+<div class="voice">
+<h3>🎙️ Recorder</h3>
+<p id="status">Click to START</p>
+<p class="timer" id="timer">00:00</p>
+<button class="mic" id="mic" onclick="toggleRec()">🎤</button>
+<p id="hint"><small>Click again to STOP</small></p>
+</div>
+</div>
+<div class="loading" id="loading">
+<div class="spinner"></div>
+<p id="loadingTxt">Processing...</p>
+</div>
+<div id="result"></div>
+<div id="msg"></div>
+</div>
+</div>
+<script>
+const API='https://salesbot-api.onrender.com';
+function switchTab(t){document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));document.querySelectorAll('.tab').forEach(e=>e.classList.remove('active'));document.getElementById(t+'-tab').classList.add('active');event.target.classList.add('active')}
+async function extract(){const t=document.getElementById('txt').value.trim();if(!t){showMsg('Enter notes!','error');return}showLoading('Analyzing...');try{const r=await fetch(`${API}/api/extract`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:t})});const d=await r.json();hideLoading();if(d.success){display(d.data);showMsg('Extracted!','success')}else{showMsg('Error: '+d.error,'error')}}catch(e){hideLoading();showMsg('Error: '+e.message,'error')}}
+let mr,ac=[],isRec=false,st,ti;
+async function toggleRec(){isRec?stopRec():await startRec()}
+async function startRec(){try{const s=await navigator.mediaDevices.getUserMedia({audio:true});mr=new MediaRecorder(s);ac=[];mr.ondataavailable=e=>{if(e.data.size>0)ac.push(e.data)};mr.onstop=async()=>{const b=new Blob(ac,{type:'audio/webm'});await transcribe(b);s.getTracks().forEach(t=>t.stop());resetUI()};mr.start(100);isRec=true;st=Date.now();document.getElementById('mic').classList.add('rec');document.getElementById('status').textContent='🔴 Recording... Click to STOP';document.getElementById('hint').innerHTML='<small><strong>Click to STOP</strong></small>';ti=setInterval(()=>{const sec=Math.floor((Date.now()-st)/1000);document.getElementById('timer').textContent=`${String(Math.floor(sec/60)).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}`},1000)}catch(e){showMsg('Mic error: '+e.message,'error')}}
+function stopRec(){if(mr&&isRec){mr.stop();isRec=false;document.getElementById('status').textContent='Processing...'}}
+function resetUI(){isRec=false;document.getElementById('mic').classList.remove('rec');document.getElementById('status').textContent='Click to START';document.getElementById('timer').textContent='00:00';document.getElementById('hint').innerHTML='<small>Click again to STOP</small>';if(ti)clearInterval(ti)}
+async function transcribe(b){showLoading('Transcribing...');try{const r=new FileReader();r.onloadend=async()=>{const a=r.result;const res=await fetch(`${API}/api/transcribe`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({audio:a})});const d=await res.json();if(d.success){showMsg('Transcribed: '+d.text,'success');showLoading('Extracting...');const res2=await fetch(`${API}/api/extract`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:d.text})});const d2=await res2.json();hideLoading();if(d2.success)display(d2.data)}else{hideLoading();showMsg('Failed: '+d.error,'error')}};r.readAsDataURL(b)}catch(e){hideLoading();showMsg('Error: '+e.message,'error')}}
+function display(d){window.leadData=d;const h=`<div class="data"><h3>📋 Data</h3><div class="grid"><div class="item"><label>Contact</label>${d.contact_name||'N/A'}</div><div class="item"><label>Organization</label>${d.organization||'N/A'}</div><div class="item"><label>Phone</label>${d.phone||'N/A'}</div><div class="item"><label>Email</label>${d.email||'N/A'}</div><div class="item"><label>Products</label>${d.products||'N/A'}</div><div class="item"><label>Quantity</label>${d.quantity||'N/A'}</div><div class="item"><label>Budget</label>₹${d.budget||'N/A'}</div><div class="item"><label>Timeline</label>${d.timeline||'N/A'}</div></div><button onclick="save()" style="margin-top:20px">💾 Save</button></div>`;document.getElementById('result').innerHTML=h}
+async function save(){if(!window.leadData){showMsg('No data!','error');return}showLoading('Saving...');try{const r=await fetch(`${API}/api/save`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({lead_data:window.leadData,sales_rep:document.getElementById('rep').value})});const d=await r.json();hideLoading();if(d.success){showMsg(`✅ Saved! ID: ${d.lead_id}`,'success');setTimeout(clear,3000)}else{showMsg('Failed: '+d.error,'error')}}catch(e){hideLoading();showMsg('Error: '+e.message,'error')}}
+function showLoading(t){document.getElementById('loading').classList.add('active');document.getElementById('loadingTxt').textContent=t}
+function hideLoading(){document.getElementById('loading').classList.remove('active')}
+function showMsg(m,t){document.getElementById('msg').innerHTML=`<div class="msg ${t}">${m}</div>`;setTimeout(()=>{document.getElementById('msg').innerHTML=''},10000)}
+function clear(){document.getElementById('txt').value='';document.getElementById('result').innerHTML='';document.getElementById('msg').innerHTML='';document.getElementById('status').textContent='Click to START';resetUI();window.leadData=null}
+window.onload=async function(){try{const r=await fetch(`${API}/health`);const d=await r.json();if(d.status==='healthy'){showMsg('✅ Connected!','success')}}catch(e){showMsg('❌ Cannot connect! Check URL','error')}}
+</script>
+</body>
+</html>
