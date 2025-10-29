@@ -13,9 +13,14 @@ workbook = None
 
 try:
     from groq import Groq
-    groq_client = Groq(api_key=os.environ.get('GROQ_API_KEY'))
-except:
-    pass
+    api_key = os.environ.get('GROQ_API_KEY', '').strip()
+    if api_key and api_key.startswith('gsk_'):
+        groq_client = Groq(api_key=api_key)
+        print(f"✓ Groq initialized with key: {api_key[:10]}...")
+    else:
+        print(f"✗ Invalid GROQ_API_KEY: {api_key[:20] if api_key else 'EMPTY'}")
+except Exception as e:
+    print(f"✗ Groq error: {e}")
 
 try:
     import gspread
@@ -105,3 +110,4 @@ def stats():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 10000)))
+
