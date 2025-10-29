@@ -105,26 +105,3 @@ def stats():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 10000)))
-```
-
-6. Click **"Commit changes"**
-
----
-
-## **ABOUT PYTHON 3 SETTING:**
-
-**YES, Python 3 is correct!** ✅
-
-Docker was wrong. Python 3 is what you need.
-
----
-
-## **NOW WAIT:**
-
-Render will auto-redeploy in 3-4 minutes.
-
-Watch the logs. Should see:
-```
-==> Build successful
-==> Starting service
-[INFO] Listening at: http://0.0.0.0:10000
