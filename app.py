@@ -107,13 +107,24 @@ if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 10000)))
 ```
 
+6. Click **"Commit changes"**
+
 ---
 
-## **FILE 2: `requirements.txt`**
+## **ABOUT PYTHON 3 SETTING:**
+
+**YES, Python 3 is correct!** ✅
+
+Docker was wrong. Python 3 is what you need.
+
+---
+
+## **NOW WAIT:**
+
+Render will auto-redeploy in 3-4 minutes.
+
+Watch the logs. Should see:
 ```
-flask==3.0.0
-flask-cors==4.0.0
-gunicorn==21.2.0
-gspread==5.12.0
-oauth2client==4.1.3
-groq==0.9.0
+==> Build successful
+==> Starting service
+[INFO] Listening at: http://0.0.0.0:10000
